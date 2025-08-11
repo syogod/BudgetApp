@@ -3,7 +3,7 @@
         xmlns:vm="using:BudgetApp.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" Width="525" Height="450"
         x:Class="BudgetApp.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
@@ -17,7 +17,34 @@
     
     <Window.Resources>
     </Window.Resources>
+
     <StackPanel>
+        <Grid RowDefinitions="Auto,*" Margin="10" Background="LightGray">
+            <!-- Navigation Bar -->
+            <Grid ColumnDefinitions="Auto,*,Auto" Row="0" VerticalAlignment="Top" Margin="10">
+                <Button Command="{Binding PreviousMonthCommand}" Grid.Column="0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="← " />
+                        <TextBlock Text="{Binding PreviousMonthName}" />
+                    </StackPanel>
+                </Button>
+                <TextBlock Text="{Binding CurrentMonthYear}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" FontWeight="Bold" FontSize="16"/>
+                <Button Command="{Binding NextMonthCommand}" Grid.Column="2">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding NextMonthName}" />
+                        <TextBlock Text=" →" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+            <!-- Rest of your content below -->
+            <ListBox ItemsSource="{Binding Categories}" Grid.Row="1">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBox Text="{Binding Name}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
         <ListBox ItemsSource="{Binding Categories}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
