@@ -19,9 +19,9 @@
     </Window.Resources>
 
     <StackPanel>
-        <Grid RowDefinitions="Auto,*" Margin="10" Background="LightGray">
+        <Grid RowDefinitions="Auto,*" Margin="10" >
             <!-- Navigation Bar -->
-            <Grid ColumnDefinitions="Auto,*,Auto" Row="0" VerticalAlignment="Top" Margin="10">
+            <Grid ColumnDefinitions="Auto,*,Auto" Row="0" VerticalAlignment="Top" Margin="10" >
                 <Button Command="{Binding PreviousMonthCommand}" Grid.Column="0">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="← " />
@@ -36,21 +36,56 @@
                     </StackPanel>
                 </Button>
             </Grid>
-            <!-- Rest of your content below -->
-            <ListBox ItemsSource="{Binding Categories}" Grid.Row="1">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBox Text="{Binding Name}" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <Grid Row="1" ColumnDefinitions="*,*" Margin="10" >
+                <ItemsControl Grid.Column="0" ItemsSource="{Binding NonBillRootCategories}" x:Name="Root">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="10">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                <ItemsControl ItemsSource="{Binding SubCategories}" >
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="*, Auto, Auto, Auto" >
+                                                <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center"/>
+                                                <TextBox Grid.Column="1" Text="{Binding NewTransactionAmount, Mode=TwoWay}" Watermark="0" Width="60" VerticalAlignment="Center"/>
+                                                <Button Grid.Column="2" Content="Add"
+                                                        Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddTransactionCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="3" Text="{Binding MonthlySum, Mode=TwoWay}" VerticalAlignment="Center" FontWeight="Bold"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <ItemsControl Grid.Column="1" ItemsSource="{Binding BillRootCategories}" x:Name="RootBill">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="10">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                <ItemsControl ItemsSource="{Binding SubCategories}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="*, Auto, Auto, Auto">
+                                                <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center"/>
+                                                <TextBox Grid.Column="1" Text="{Binding NewTransactionAmount, Mode=TwoWay}" Watermark="0" Width="60" VerticalAlignment="Center"/>
+                                                <Button Grid.Column="2" Content="Add"
+                                                        Command="{Binding #RootBill.((vm:MainWindowViewModel)DataContext).AddTransactionCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="3" Text="{Binding MonthlySum, Mode=TwoWay}" VerticalAlignment="Center" FontWeight="Bold"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
         </Grid>
-        <ListBox ItemsSource="{Binding Categories}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBox Text="{Binding Name}"></TextBox>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
     </StackPanel>
 </Window>

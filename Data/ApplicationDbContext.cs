@@ -6,6 +6,7 @@ namespace BudgetApp.Data;
 public class ApplicationDbContext: DbContext
 {
     public DbSet<CategoryModel>  Categories { get; set; }
+    public DbSet<TransactionModel> Transactions { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
