@@ -3,6 +3,8 @@
         xmlns:vm="using:BudgetApp.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="using:Avalonia.Xaml.Interactivity"
+        xmlns:behaviors="using:BudgetApp.Behaviors"
         mc:Ignorable="d" Width="525" Height="450"
         x:Class="BudgetApp.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -17,6 +19,7 @@
     
     <Window.Resources>
     </Window.Resources>
+    
 
     <StackPanel>
         <Grid RowDefinitions="Auto,*" Margin="10" >
@@ -36,12 +39,33 @@
                     </StackPanel>
                 </Button>
             </Grid>
+            <!-- Categories and Transactions -->
             <Grid Row="1" ColumnDefinitions="*,*" Margin="10" >
                 <ItemsControl Grid.Column="0" ItemsSource="{Binding NonBillRootCategories}" x:Name="Root">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Margin="10">
-                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                    <Button Content="+" 
+                                            Padding="0" 
+                                            Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddCategoryCommand}" 
+                                            CommandParameter="{Binding CategoryId}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0"
+                                            IsVisible="{Binding IsAddingSubcategory}" >
+                                    <TextBox Width="120" 
+                                             Text="{Binding NewSubcategoryName, Mode=TwoWay}" 
+                                             Watermark="New category name"
+                                             Focusable="True">
+                                        <i:Interaction.Behaviors>
+                                            <behaviors:FocusOnVisibleBehavior/>
+                                        </i:Interaction.Behaviors>
+                                    </TextBox>
+                                    <Button Content = "Add"
+                                            Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).SaveSubcategoryCommand}"
+                                            CommandParameter="{Binding}"/>
+                                </StackPanel>
                                 <ItemsControl ItemsSource="{Binding SubCategories}" >
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
@@ -65,7 +89,27 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Margin="10">
-                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                    <Button Content="+" 
+                                            Padding="0" 
+                                            Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddCategoryCommand}" 
+                                            CommandParameter="{Binding CategoryId}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0"
+                                            IsVisible="{Binding IsAddingSubcategory}" >
+                                    <TextBox Width="120" 
+                                             Text="{Binding NewSubcategoryName, Mode=TwoWay}" 
+                                             Watermark="New category name" 
+                                             Focusable="True">
+                                        <i:Interaction.Behaviors>
+                                            <behaviors:FocusOnVisibleBehavior/>
+                                        </i:Interaction.Behaviors>
+                                    </TextBox>
+                                    <Button Content = "Add"
+                                            Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).SaveSubcategoryCommand}"
+                                            CommandParameter="{Binding}"/>
+                                </StackPanel>
                                 <ItemsControl ItemsSource="{Binding SubCategories}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>

@@ -31,4 +31,10 @@ public partial class CategoryModel : ObservableObject
         get => _newTransactionAmount;
         set => SetProperty(ref _newTransactionAmount, value);
     }
+    
+    [NotMapped]
+    public bool IsAddingSubcategory { get; set; } = false;
+    
+    [NotMapped]
+    public string? NewSubcategoryName { get; set; } = null;
 }
