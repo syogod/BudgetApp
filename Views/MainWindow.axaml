@@ -5,6 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="using:Avalonia.Xaml.Interactivity"
         xmlns:behaviors="using:BudgetApp.Behaviors"
+        xmlns:localBehaviors="using:BudgetApp.Behaviors"
+        xmlns:converters="using:BudgetApp.Converters"
         mc:Ignorable="d" 
         x:Class="BudgetApp.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -13,7 +15,8 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="BudgetApp"
         Background="LightGray"
-        Foreground="Black">
+        Foreground="Black"
+        CornerRadius="5" >
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -22,126 +25,164 @@
     </Design.DataContext>
     
     <Window.Resources>
+        <converters:StringToIntConverter x:Key="StringToIntConvert"/>
     </Window.Resources>
     
 
-    <StackPanel>
-        <Grid RowDefinitions="Auto,*" Margin="10" >
-            <!-- Navigation Bar -->
-            <Border Classes="formatted">
-                <Grid ColumnDefinitions="Auto,*,Auto" Row="0" VerticalAlignment="Top" Margin="10" >
-                    <Button Command="{Binding PreviousMonthCommand}" Grid.Column="0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="← "/>
-                            <TextBlock Text="{Binding PreviousMonthName}" />
-                        </StackPanel>
-                    </Button>
-                    <TextBlock Text="{Binding CurrentMonthYear}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" FontWeight="Bold" FontSize="16"/>
-                    <Button Command="{Binding NextMonthCommand}" Grid.Column="2">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding NextMonthName}" />
-                            <TextBlock Text=" →" />
-                        </StackPanel>
-                    </Button>
-                </Grid>
-            </Border>
-        <!-- Categories and Transactions -->
-            <Grid Row="1" ColumnDefinitions="*,*" Margin="5" >
-                <ItemsControl Grid.Column="0" ItemsSource="{Binding NonBillRootCategories}" x:Name="Root">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Classes="ParentCategory">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                                    <Button Content="+" 
-                                            Padding="1,-1,1,1"
-                                            VerticalAlignment="Center"
-                                            Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddCategoryCommand}" 
-                                            CommandParameter="{Binding CategoryId}"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0"
-                                            IsVisible="{Binding IsAddingSubcategory}" >
-                                    <TextBox Width="120" 
-                                             Text="{Binding NewSubcategoryName, Mode=TwoWay}" 
-                                             Watermark="New category name"
-                                             Focusable="True">
-                                        <i:Interaction.Behaviors>
-                                            <behaviors:FocusOnVisibleBehavior/>
-                                        </i:Interaction.Behaviors>
-                                    </TextBox>
-                                    <Button Content = "Add"
-                                            Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).SaveSubcategoryCommand}"
-                                            CommandParameter="{Binding}"/>
-                                </StackPanel>
-                                <Border Classes="formatted">
+
+    <Grid RowDefinitions="Auto,*" Margin="10" >
+        <!-- Navigation Bar -->
+        <Border Classes="formatted">
+            <Grid ColumnDefinitions="Auto,*,Auto" Row="0" VerticalAlignment="Top" Margin="10"  >
+                <Button Command="{Binding PreviousMonthCommand}" Grid.Column="0" CornerRadius="5"  >
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="← "/>
+                        <TextBlock Text="{Binding PreviousMonthName}" />
+                    </StackPanel>
+                </Button>
+                <TextBlock Text="{Binding CurrentMonthYear}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" FontWeight="Bold" FontSize="16"/>
+                <Button Command="{Binding NextMonthCommand}" Grid.Column="2" >
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding NextMonthName}" />
+                        <TextBlock Text=" →" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+    <!-- Categories and Transactions -->
+        <Grid Row="1" ColumnDefinitions="*,*" Margin="5" >
+            <ItemsControl Grid.Column="0" ItemsSource="{Binding NonBillRootCategories}" x:Name="Root">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Classes="ParentCategory">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                <Button Content="+" 
+                                        Padding="1,-1,1,1"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddCategoryCommand}" 
+                                        CommandParameter="{Binding CategoryId}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0"
+                                        IsVisible="{Binding IsAddingSubcategory}" >
+                                <TextBox Width="120" 
+                                         Text="{Binding NewSubcategoryName, Mode=TwoWay}" 
+                                         Watermark="New category name"
+                                         Focusable="True">
+                                    <i:Interaction.Behaviors>
+                                        <behaviors:FocusOnVisibleBehavior/>
+                                    </i:Interaction.Behaviors>
+                                </TextBox>
+                                <Button Content = "Add"
+                                        Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).SaveSubcategoryCommand}"
+                                        CommandParameter="{Binding}"/>
+                            </StackPanel>
+                            <Border Classes="formatted">
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="*,Auto,Auto,50,50">
+                                        <TextBlock Grid.Column="3" HorizontalAlignment="Right">Total</TextBlock>
+                                        <TextBlock Grid.Column="4" HorizontalAlignment="Right">Avg</TextBlock>
+                                    </Grid>
                                     <ItemsControl ItemsSource="{Binding SubCategories}" >
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid ColumnDefinitions="*, Auto, Auto, 40" ColumnSpacing="5" Margin="1">
+                                                <Grid ColumnDefinitions="*, Auto, Auto, 50, 50" ColumnSpacing="5" Margin="1">
                                                     <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center"/>
-                                                    <TextBox Grid.Column="1" Text="{Binding NewTransactionAmount, Mode=TwoWay}" Watermark="0" Width="60" VerticalAlignment="Center"/>
+                                                    <TextBox Grid.Column="1" 
+                                                             Text="{Binding NewTransactionAmount, Mode=TwoWay, Converter={StaticResource StringToIntConvert}}" 
+                                                             Watermark="0" 
+                                                             Width="60" 
+                                                             VerticalAlignment="Center">
+                                                        <i:Interaction.Behaviors>
+                                                            <localBehaviors:NumericOnlyBehavior/>
+                                                            <localBehaviors:EnterKeyCommandBehavior
+                                                                Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddTransactionCommand}"
+                                                                CommandParameter = "{Binding}" />
+                                                        </i:Interaction.Behaviors>
+
+                                                    </TextBox>
                                                     <Button Grid.Column="2" Content="Add"
                                                             Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddTransactionCommand}"
                                                             CommandParameter="{Binding}"
                                                             VerticalAlignment="Center"/>
-                                                    <TextBlock Classes="TotalAverages" Grid.Column="3" Text="{Binding MonthlySum, Mode=TwoWay}" />
+                                                    <TextBlock Classes="TotalAverages" HorizontalAlignment="Right" Grid.Column="3" Text="{Binding MonthlySum, Mode=TwoWay}" />
+                                                    <TextBlock Classes="TotalAverages" Grid.Column="4" Text="{Binding TriMonthlyAvg, Mode=TwoWay}" />
                                                 </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                </Border>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ItemsControl Grid.Column="1" ItemsSource="{Binding BillRootCategories}" x:Name="RootBill">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Classes="ParentCategory">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                <Button Content="+" 
+                                        Padding="1,-1,1,1"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddCategoryCommand}" 
+                                        CommandParameter="{Binding CategoryId}"/>
                             </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <ItemsControl Grid.Column="1" ItemsSource="{Binding BillRootCategories}" x:Name="RootBill">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Classes="ParentCategory">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                                    <Button Content="+" 
-                                            Padding="1,-1,1,1"
-                                            VerticalAlignment="Center"
-                                            Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddCategoryCommand}" 
-                                            CommandParameter="{Binding CategoryId}"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0"
-                                            IsVisible="{Binding IsAddingSubcategory}" >
-                                    <TextBox Width="120" 
-                                             Text="{Binding NewSubcategoryName, Mode=TwoWay}" 
-                                             Watermark="New category name" 
-                                             Focusable="True">
-                                        <i:Interaction.Behaviors>
-                                            <behaviors:FocusOnVisibleBehavior/>
-                                        </i:Interaction.Behaviors>
-                                    </TextBox>
-                                    <Button Content = "Add"
-                                            Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).SaveSubcategoryCommand}"
-                                            CommandParameter="{Binding}"/>
-                                </StackPanel>
-                                <Border Classes="formatted">
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0"
+                                        IsVisible="{Binding IsAddingSubcategory}" >
+                                <TextBox Width="120" 
+                                         Text="{Binding NewSubcategoryName, Mode=TwoWay}" 
+                                         Watermark="New category name" 
+                                         Focusable="True">
+                                    <i:Interaction.Behaviors>
+                                        <behaviors:FocusOnVisibleBehavior/>
+                                    </i:Interaction.Behaviors>
+                                </TextBox>
+                                <Button Content = "Add"
+                                        Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).SaveSubcategoryCommand}"
+                                        CommandParameter="{Binding}"/>
+                            </StackPanel>
+                            <Border Classes="formatted">
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="*,Auto,Auto,40,40">
+                                        <TextBlock Grid.Column="3" HorizontalAlignment="Right">Total</TextBlock>
+                                        <TextBlock Grid.Column="4" HorizontalAlignment="Right">Avg</TextBlock>
+                                    </Grid>
                                     <ItemsControl ItemsSource="{Binding SubCategories}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid ColumnDefinitions="*, Auto, Auto, 40" ColumnSpacing="5" Margin="1">
+                                                <Grid ColumnDefinitions="*, Auto, Auto, 50, 50" ColumnSpacing="5" Margin="1">
                                                     <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center"/>
-                                                    <TextBox Grid.Column="1" Text="{Binding NewTransactionAmount, Mode=TwoWay}" Watermark="0" Width="60" VerticalAlignment="Center"/>
+                                                    <TextBox Grid.Column="1" 
+                                                             Text="{Binding NewTransactionAmount, Mode=TwoWay, Converter={StaticResource StringToIntConvert}}" 
+                                                             Watermark="0" 
+                                                             Width="60" 
+                                                             VerticalAlignment="Center">
+                                                        <i:Interaction.Behaviors>
+                                                            <localBehaviors:NumericOnlyBehavior/>
+                                                            <localBehaviors:EnterKeyCommandBehavior
+                                                                Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddTransactionCommand}"
+                                                                CommandParameter = "{Binding}" />
+                                                        </i:Interaction.Behaviors>
+
+                                                    </TextBox>
                                                     <Button Grid.Column="2" Content="Add"
                                                             Command="{Binding #RootBill.((vm:MainWindowViewModel)DataContext).AddTransactionCommand}"
                                                             CommandParameter="{Binding}"
                                                             VerticalAlignment="Center"/>
                                                     <TextBlock Classes="TotalAverages" Grid.Column="3" Text="{Binding MonthlySum, Mode=TwoWay}" />
+                                                    <TextBlock Classes="TotalAverages" Grid.Column="4" Text="{Binding TriMonthlyAvg, Mode=TwoWay}" />
                                                 </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                </Border>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </Grid>
-    </StackPanel>
+    </Grid>
 </Window>

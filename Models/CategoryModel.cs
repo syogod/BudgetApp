@@ -16,7 +16,8 @@ public partial class CategoryModel : ObservableObject
     [NotMapped] public ICollection<CategoryModel>? SubCategories { get; set; }
 
     private int _monthlySum = 0;
-    private int _newTransactionAmount = 0;
+    private int _triMonthlyAvg = 0;
+    private int? _newTransactionAmount = null;
 
     [NotMapped]
     public int MonthlySum
@@ -26,7 +27,14 @@ public partial class CategoryModel : ObservableObject
     }
 
     [NotMapped]
-    public int NewTransactionAmount
+    public int TriMonthlyAvg
+    {
+        get => _triMonthlyAvg;
+        set => SetProperty(ref _triMonthlyAvg, value);
+    }
+    
+    [NotMapped]
+    public int? NewTransactionAmount
     {
         get => _newTransactionAmount;
         set => SetProperty(ref _newTransactionAmount, value);

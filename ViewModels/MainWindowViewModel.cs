@@ -50,6 +50,10 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void UpdateMonthYear()
     {
+        using (var context = new ApplicationDbContext())
+        {
+            Transactions = new ObservableCollection<TransactionModel>(context.Transactions);
+        }
         CurrentMonthYear = _currentDate.ToString("MMMM yyyy");
         PreviousMonthName = _currentDate.AddMonths(-1).ToString("MMMM");
         NextMonthName = _currentDate.AddMonths(1).ToString("MMMM");
@@ -66,7 +70,21 @@ public partial class MainWindowViewModel : ViewModelBase
                 category.MonthlySum = transactions
                     .Where(t => t.CategoryID == category.CategoryId)
                     .Sum(t => t.Amount);
+                var lastThreeMonths = Enumerable.Range(1, 3)
+                    .Select(i => _currentDate.AddMonths(-i))
+                    .Select(d => new { d.Month, d.Year })
+                    .ToList();
+
+                category.TriMonthlyAvg = Convert.ToInt32(
+                    Transactions
+                        .Where(t => t.CategoryID == category.CategoryId &&
+                                    lastThreeMonths.Any(m => t.Month == m.Month && t.Year == m.Year))
+                        .Select(t => t.Amount)
+                        .DefaultIfEmpty(0)
+                        .Sum()
+                )/3;
             }
+            
         }
     }
     
@@ -80,7 +98,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void AddTransaction(CategoryModel category)
     {
-        if (category.NewTransactionAmount == 0)
+        if (category.NewTransactionAmount == 0 || category.NewTransactionAmount == null)
             return;
 
         using (var context = new ApplicationDbContext())
@@ -90,15 +108,30 @@ public partial class MainWindowViewModel : ViewModelBase
                 Month = _currentDate.Month,
                 Year = _currentDate.Year,
                 CategoryID = category.CategoryId,
-                Amount = category.NewTransactionAmount
+                Amount = category.NewTransactionAmount.Value,
             };
             context.Transactions.Add(transaction);
             context.SaveChanges();
         }
 
         // Optionally update local collection and MonthlySum
-        category.MonthlySum += category.NewTransactionAmount;
-        category.NewTransactionAmount = 0;
+        category.MonthlySum += category.NewTransactionAmount.Value;
+        category.NewTransactionAmount = null;
+        
+        // Recalculate TriMonthlyAvg
+        var lastThreeMonths = Enumerable.Range(1, 3)
+            .Select(i => _currentDate.AddMonths(-i))
+            .Select(d => new { d.Month, d.Year })
+            .ToList();
+
+        category.TriMonthlyAvg = Convert.ToInt32(
+            Transactions
+                .Where(t => t.CategoryID == category.CategoryId &&
+                            lastThreeMonths.Any(m => t.Month == m.Month && t.Year == m.Year))
+                .Select(t => t.Amount)
+                .DefaultIfEmpty(0)
+                .Sum()
+        )/3;
     }
     
     [RelayCommand]
@@ -179,6 +212,23 @@ public partial class MainWindowViewModel : ViewModelBase
                             t.Month == _currentDate.Month &&
                             t.Year == _currentDate.Year)
                 .Sum(t => t.Amount);
+        }
+
+        foreach (var category in Categories)
+        {
+            var lastThreeMonths = Enumerable.Range(1, 3)
+                .Select(i => _currentDate.AddMonths(-i))
+                .Select(d => new { d.Month, d.Year })
+                .ToList();
+
+            category.TriMonthlyAvg = Convert.ToInt32(
+                Transactions
+                    .Where(t => t.CategoryID == category.CategoryId &&
+                                lastThreeMonths.Any(m => t.Month == m.Month && t.Year == m.Year))
+                    .Select(t => t.Amount)
+                    .DefaultIfEmpty(0)
+                    .Sum()/3
+            );
         }
     }
 }
