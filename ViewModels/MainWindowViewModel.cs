@@ -33,6 +33,26 @@ public partial class MainWindowViewModel : ViewModelBase
     public IEnumerable<CategoryModel> RootCategories =>
         Categories?.Where(c => c.ParentCategoryId == null && c.Enabled == 1);
     
+    public int IncomeSum => Categories?
+        .Where(c => c.ParentCategoryId == null && c.Enabled == 1 && c.Income == 1)
+        .Sum(c => c.MonthlyParentCategorySum) ?? 0;
+
+    public int ExpenseSum => Categories?
+        .Where(c => c.ParentCategoryId == null && c.Enabled == 1 && c.Income == 0)
+        .Sum(c => c.MonthlyParentCategorySum) ?? 0;
+
+    public int NetTotal => IncomeSum - ExpenseSum;
+    
+    public int IncomeEstSum => Categories?
+        .Where(c => c.ParentCategoryId == null && c.Enabled == 1 && c.Income == 1)
+        .Sum(c => c.MonthlyParentCategoryEst) ?? 0;
+
+    public int ExpenseEstSum => Categories?
+        .Where(c => c.ParentCategoryId == null && c.Enabled == 1 && c.Income == 0)
+        .Sum(c => c.MonthlyParentCategoryEst) ?? 0;
+
+    public int NetEstTotal => IncomeEstSum - ExpenseEstSum;
+    
     // Commands to navigate between months
     [RelayCommand]
     private void PreviousMonth()
@@ -84,6 +104,12 @@ public partial class MainWindowViewModel : ViewModelBase
                         .Sum()
                 )/3;
             }
+            OnPropertyChanged(nameof(IncomeSum));
+            OnPropertyChanged(nameof(ExpenseSum));
+            OnPropertyChanged(nameof(NetTotal));
+            OnPropertyChanged(nameof(IncomeEstSum));
+            OnPropertyChanged(nameof(ExpenseEstSum));
+            OnPropertyChanged(nameof(NetEstTotal));
             
         }
     }
@@ -123,6 +149,14 @@ public partial class MainWindowViewModel : ViewModelBase
             .Select(i => _currentDate.AddMonths(-i))
             .Select(d => new { d.Month, d.Year })
             .ToList();
+
+        // Notify summary properties changed
+        OnPropertyChanged(nameof(IncomeSum));
+        OnPropertyChanged(nameof(ExpenseSum));
+        OnPropertyChanged(nameof(NetTotal));
+        OnPropertyChanged(nameof(IncomeEstSum));
+        OnPropertyChanged(nameof(ExpenseEstSum));
+        OnPropertyChanged(nameof(NetEstTotal));
 
         category.TriMonthlyAvg = Convert.ToInt32(
             Transactions
