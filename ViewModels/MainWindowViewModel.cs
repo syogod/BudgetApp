@@ -72,8 +72,10 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         using (var context = new ApplicationDbContext())
         {
+            Categories = new ObservableCollection<CategoryModel>(context.Categories);
             Transactions = new ObservableCollection<TransactionModel>(context.Transactions);
         }
+
         CurrentMonthYear = _currentDate.ToString("MMMM yyyy");
         PreviousMonthName = _currentDate.AddMonths(-1).ToString("MMMM");
         NextMonthName = _currentDate.AddMonths(1).ToString("MMMM");
