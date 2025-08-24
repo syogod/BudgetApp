@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 using CommunityToolkit.Mvvm.Input;
 using System.Linq;
+using Avalonia.Controls;
 
 
 namespace BudgetApp.ViewModels;
@@ -44,7 +45,7 @@ public partial class MainWindowViewModel : ViewModelBase
     public int NetTotal => IncomeSum - ExpenseSum;
     
     public int IncomeEstSum => Categories?
-        .Where(c => c.ParentCategoryId == null && c.Enabled == 1 && c.Income == 1)
+        .Where(c => c.ParentCategoryId == null && c is { Enabled: 1, Income: 1 })
         .Sum(c => c.MonthlyParentCategoryEst) ?? 0;
 
     public int ExpenseEstSum => Categories?
@@ -70,11 +71,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void UpdateMonthYear()
     {
-        using (var context = new ApplicationDbContext())
-        {
-            Categories = new ObservableCollection<CategoryModel>(context.Categories);
-            Transactions = new ObservableCollection<TransactionModel>(context.Transactions);
-        }
+
 
         CurrentMonthYear = _currentDate.ToString("MMMM yyyy");
         PreviousMonthName = _currentDate.AddMonths(-1).ToString("MMMM");
@@ -106,14 +103,14 @@ public partial class MainWindowViewModel : ViewModelBase
                         .Sum()
                 )/3;
             }
-            OnPropertyChanged(nameof(IncomeSum));
-            OnPropertyChanged(nameof(ExpenseSum));
-            OnPropertyChanged(nameof(NetTotal));
-            OnPropertyChanged(nameof(IncomeEstSum));
-            OnPropertyChanged(nameof(ExpenseEstSum));
-            OnPropertyChanged(nameof(NetEstTotal));
-            
+           
         }
+        OnPropertyChanged(nameof(IncomeSum));
+        OnPropertyChanged(nameof(ExpenseSum));
+        OnPropertyChanged(nameof(NetTotal));
+        OnPropertyChanged(nameof(IncomeEstSum));
+        OnPropertyChanged(nameof(ExpenseEstSum));
+        OnPropertyChanged(nameof(NetEstTotal));
     }
     
     // Collection of categories
@@ -219,6 +216,11 @@ public partial class MainWindowViewModel : ViewModelBase
     }
     public MainWindowViewModel()
     {
+        if (Design.IsDesignMode && string.IsNullOrEmpty((ApplicationDbContext.GlobalConnectionString)))
+        {
+            ApplicationDbContext.GlobalConnectionString =
+                "Server=TSUNAMI\\SQLEXPRESS;Database=Budget2;Trusted_Connection=True;TrustServerCertificate=True;";
+        }
         using (var context = new ApplicationDbContext())
         {
             Categories = new ObservableCollection<CategoryModel>(context.Categories);

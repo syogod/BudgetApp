@@ -23,11 +23,12 @@ namespace BudgetApp.Behaviors
 
         private void OnKeyDown(object? sender, KeyEventArgs e)
         {
-            // Allow control keys, digits, and numpad digits
+            // Allow control keys, digits, numpad digits, and minus sign
             if (!(e.Key >= Key.D0 && e.Key <= Key.D9) &&
                 !(e.Key >= Key.NumPad0 && e.Key <= Key.NumPad9) &&
                 e.Key != Key.Back && e.Key != Key.Delete &&
-                e.Key != Key.Left && e.Key != Key.Right && e.Key != Key.Tab)
+                e.Key != Key.Left && e.Key != Key.Right && e.Key != Key.Tab &&
+                e.Key != Key.OemMinus && e.Key != Key.Subtract)
             {
                 e.Handled = true;
             }

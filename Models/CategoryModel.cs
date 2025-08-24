@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -18,7 +19,7 @@ public partial class CategoryModel : ObservableObject
     public required byte Income { get; set; }
     public required byte Enabled { get; set; } = 1;
 
-    [NotMapped] public ICollection<CategoryModel>? SubCategories { get; set; }
+    [NotMapped] public ObservableCollection<CategoryModel>? SubCategories { get; set; }
 
     private int _monthlySum = 0;
     private int _triMonthlyAvg = 0;
