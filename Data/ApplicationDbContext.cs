@@ -8,9 +8,10 @@ public class ApplicationDbContext: DbContext
 {
     public static string? GlobalConnectionString { get; set; } = null;
     private readonly string _connectionString;
+    
     public DbSet<CategoryModel>  Categories { get; set; }
     public DbSet<TransactionModel> Transactions { get; set; }
-
+    
     public ApplicationDbContext()
     {
         if (GlobalConnectionString == null)

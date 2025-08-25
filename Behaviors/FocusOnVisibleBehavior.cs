@@ -8,14 +8,17 @@ namespace BudgetApp.Behaviors
 {
     public class FocusOnVisibleBehavior : Behavior<TextBox>
     {
+        // This behavior can be attached to a control (e.g., TextBox) to automatically set focus
+        // when the control becomes visible. Useful for improving user experience in forms or dialogs
+        // where you want the first input to be focused as soon as it appears.
+        //
+        // Usage: Attach this behavior in XAML to the desired control.
         protected override void OnAttached()
         {
             base.OnAttached();
-            if (AssociatedObject != null)
-            {
-                AssociatedObject.PropertyChanged += OnPropertyChanged;
-                AssociatedObject.AttachedToVisualTree += OnAttachedToVisualTree;
-            }
+            if (AssociatedObject == null) return;
+            AssociatedObject.PropertyChanged += OnPropertyChanged;
+            AssociatedObject.AttachedToVisualTree += OnAttachedToVisualTree;
         }
 
         protected override void OnDetaching()
@@ -37,7 +40,7 @@ namespace BudgetApp.Behaviors
         }
         private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Property == Avalonia.Controls.Control.IsVisibleProperty && AssociatedObject?.IsVisible == true)
+            if (e.Property == Visual.IsVisibleProperty && AssociatedObject?.IsVisible == true)
             {
                 Dispatcher.UIThread.Post(() => AssociatedObject.Focus(), DispatcherPriority.Background);
             }

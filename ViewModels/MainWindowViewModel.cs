@@ -25,21 +25,19 @@ public partial class MainWindowViewModel : ViewModelBase
     private string _nextMonthName = DateTime.Now.AddMonths(1).ToString("MMMM");
 
 
-    public IEnumerable<CategoryModel> NonBillRootCategories =>
-        Categories?.Where(c => c.ParentCategoryId == null && c.Enabled == 1 && c.Name != "Bills");
+    public IEnumerable<CategoryModel>? NonBillRootCategories =>
+        Categories?.Where(c => c.ParentCategoryId == null && c is { Enabled: 1, Name: not "Bills" });
 
-    public IEnumerable<CategoryModel> BillRootCategories =>
-        Categories?.Where(c => c.ParentCategoryId == null && c.Enabled == 1 && c.Name == "Bills");
+    public IEnumerable<CategoryModel>? BillRootCategories =>
+        Categories?.Where(c => c.ParentCategoryId == null && c is { Enabled: 1, Name: "Bills" });
     
-    public IEnumerable<CategoryModel> RootCategories =>
-        Categories?.Where(c => c.ParentCategoryId == null && c.Enabled == 1);
-    
-    public int IncomeSum => Categories?
-        .Where(c => c.ParentCategoryId == null && c.Enabled == 1 && c.Income == 1)
+    // Summary properties
+  public int IncomeSum => Categories?
+        .Where(c => c.ParentCategoryId == null && c is { Enabled: 1, Income: 1 })
         .Sum(c => c.MonthlyParentCategorySum) ?? 0;
 
     public int ExpenseSum => Categories?
-        .Where(c => c.ParentCategoryId == null && c.Enabled == 1 && c.Income == 0)
+        .Where(c => c.ParentCategoryId == null && c is { Enabled: 1, Income: 0 })
         .Sum(c => c.MonthlyParentCategorySum) ?? 0;
 
     public int NetTotal => IncomeSum - ExpenseSum;
@@ -49,7 +47,7 @@ public partial class MainWindowViewModel : ViewModelBase
         .Sum(c => c.MonthlyParentCategoryEst) ?? 0;
 
     public int ExpenseEstSum => Categories?
-        .Where(c => c.ParentCategoryId == null && c.Enabled == 1 && c.Income == 0)
+        .Where(c => c.ParentCategoryId == null && c is { Enabled: 1, Income: 0 })
         .Sum(c => c.MonthlyParentCategoryEst) ?? 0;
 
     public int NetEstTotal => IncomeEstSum - ExpenseEstSum;
@@ -69,34 +67,32 @@ public partial class MainWindowViewModel : ViewModelBase
         UpdateMonthYear();
     }
 
+    // Update month/year display and recalculate MonthlySum for each category
     private void UpdateMonthYear()
     {
-
-
         CurrentMonthYear = _currentDate.ToString("MMMM yyyy");
         PreviousMonthName = _currentDate.AddMonths(-1).ToString("MMMM");
         NextMonthName = _currentDate.AddMonths(1).ToString("MMMM");
-
-        // Recalculate MonthlySum for each category
+        
         using (var context = new ApplicationDbContext())
         {
             var transactions = context.Transactions
                 .Where(t => t.Month == _currentDate.Month && t.Year == _currentDate.Year)
                 .ToList();
-
+            
             foreach (var category in Categories)
             {
                 category.MonthlySum = transactions
-                    .Where(t => t.CategoryID == category.CategoryId)
+                    .Where(t => t.CategoryId == category.CategoryId)
                     .Sum(t => t.Amount);
                 var lastThreeMonths = Enumerable.Range(1, 3)
                     .Select(i => _currentDate.AddMonths(-i))
                     .Select(d => new { d.Month, d.Year })
                     .ToList();
-
+                
                 category.TriMonthlyAvg = Convert.ToInt32(
                     Transactions
-                        .Where(t => t.CategoryID == category.CategoryId &&
+                        .Where(t => t.CategoryId == category.CategoryId &&
                                     lastThreeMonths.Any(m => t.Month == m.Month && t.Year == m.Year))
                         .Select(t => t.Amount)
                         .DefaultIfEmpty(0)
@@ -105,6 +101,8 @@ public partial class MainWindowViewModel : ViewModelBase
             }
            
         }
+        
+        // Notify summary properties changed
         OnPropertyChanged(nameof(IncomeSum));
         OnPropertyChanged(nameof(ExpenseSum));
         OnPropertyChanged(nameof(NetTotal));
@@ -113,17 +111,14 @@ public partial class MainWindowViewModel : ViewModelBase
         OnPropertyChanged(nameof(NetEstTotal));
     }
     
-    // Collection of categories
     private ObservableCollection<CategoryModel> Categories { get; set; }
-    
-    // Collection of transactions
     private ObservableCollection<TransactionModel> Transactions { get; set; }
     
     // Command to add a new transaction
     [RelayCommand]
     private void AddTransaction(CategoryModel category)
     {
-        if (category.NewTransactionAmount == 0 || category.NewTransactionAmount == null)
+        if (category.NewTransactionAmount is 0 or null)
             return;
 
         using (var context = new ApplicationDbContext())
@@ -132,14 +127,14 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 Month = _currentDate.Month,
                 Year = _currentDate.Year,
-                CategoryID = category.CategoryId,
+                CategoryId = category.CategoryId,
                 Amount = category.NewTransactionAmount.Value,
             };
             context.Transactions.Add(transaction);
             context.SaveChanges();
         }
 
-        // Optionally update local collection and MonthlySum
+        // Update local Transactions collection
         category.MonthlySum += category.NewTransactionAmount.Value;
         category.NewTransactionAmount = null;
         
@@ -157,9 +152,10 @@ public partial class MainWindowViewModel : ViewModelBase
         OnPropertyChanged(nameof(ExpenseEstSum));
         OnPropertyChanged(nameof(NetEstTotal));
 
+        // Recalculate TriMonthlyAvg
         category.TriMonthlyAvg = Convert.ToInt32(
             Transactions
-                .Where(t => t.CategoryID == category.CategoryId &&
+                .Where(t => t.CategoryId == category.CategoryId &&
                             lastThreeMonths.Any(m => t.Month == m.Month && t.Year == m.Year))
                 .Select(t => t.Amount)
                 .DefaultIfEmpty(0)
@@ -167,20 +163,20 @@ public partial class MainWindowViewModel : ViewModelBase
         )/3;
     }
     
+    // Command to toggle adding a new subcategory
     [RelayCommand]
     private void AddCategory(int parentCategoryId)
     {
         var parent = Categories.FirstOrDefault(c => c.CategoryId == parentCategoryId);
-        if (parent != null)
-        {
-            parent.IsAddingSubcategory = !parent.IsAddingSubcategory; // Toggle visibility
-            if (!parent.IsAddingSubcategory)
-                parent.NewSubcategoryName = string.Empty; // Optionally clear input when hiding
-            OnPropertyChanged(nameof(NonBillRootCategories));
-            OnPropertyChanged(nameof(BillRootCategories));
-        }
+        if (parent == null) return;
+        parent.IsAddingSubcategory = !parent.IsAddingSubcategory; // Toggle visibility
+        if (!parent.IsAddingSubcategory)
+            parent.NewSubcategoryName = string.Empty; // Optionally clear input when hiding
+        OnPropertyChanged(nameof(NonBillRootCategories));
+        OnPropertyChanged(nameof(BillRootCategories));
     }
     
+    // Command to save a new subcategory
     [RelayCommand]
     private void SaveSubcategory(CategoryModel parentCategory)
     {
@@ -189,11 +185,11 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var newSubcategory = new CategoryModel
         {
-            CategoryId = 0, // New category, ID will be generated by the database
+            CategoryId = 0, 
             Name = parentCategory.NewSubcategoryName,
             ParentCategoryId = parentCategory.CategoryId,
-            Income = 0, // Default value, can be changed later
-            Enabled = 1 // Default enabled state
+            Income = 0, 
+            Enabled = 1 
         };
 
         using (var context = new ApplicationDbContext())
@@ -202,25 +198,29 @@ public partial class MainWindowViewModel : ViewModelBase
             context.SaveChanges();
         }
 
-        // Update local collection and reset adding state
+        // Update local Categories collection
         Categories.Add(newSubcategory);
-        
         parentCategory.SubCategories = new ObservableCollection<CategoryModel>(Categories.Where(c => c.ParentCategoryId == parentCategory.CategoryId && c.Enabled == 1));
         
-        
+        // Reset input state
         parentCategory.IsAddingSubcategory = false;
         parentCategory.NewSubcategoryName = null;
         
+        // Notify UI to refresh
         OnPropertyChanged(nameof(NonBillRootCategories));
         OnPropertyChanged(nameof(BillRootCategories));
     }
+    
     public MainWindowViewModel()
     {
+        // Set global connection string for design-time data context
         if (Design.IsDesignMode && string.IsNullOrEmpty((ApplicationDbContext.GlobalConnectionString)))
         {
             ApplicationDbContext.GlobalConnectionString =
                 "Server=TSUNAMI\\SQLEXPRESS;Database=Budget2;Trusted_Connection=True;TrustServerCertificate=True;";
         }
+        
+        // Initialize collections
         using (var context = new ApplicationDbContext())
         {
             Categories = new ObservableCollection<CategoryModel>(context.Categories);
@@ -242,16 +242,18 @@ public partial class MainWindowViewModel : ViewModelBase
             root.SubCategories = new ObservableCollection<CategoryModel>(
                 Categories.Where(c => c.ParentCategoryId == root.CategoryId && c.Enabled == 1));
         }
+        
         // Calculate monthly sums for each category
         foreach (var category in Categories)
         {
             category.MonthlySum = Transactions
-                .Where(t => t.CategoryID == category.CategoryId &&
+                .Where(t => t.CategoryId == category.CategoryId &&
                             t.Month == _currentDate.Month &&
                             t.Year == _currentDate.Year)
                 .Sum(t => t.Amount);
         }
 
+        // Calculate tri-monthly averages for each category
         foreach (var category in Categories)
         {
             var lastThreeMonths = Enumerable.Range(1, 3)
@@ -261,7 +263,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
             category.TriMonthlyAvg = Convert.ToInt32(
                 Transactions
-                    .Where(t => t.CategoryID == category.CategoryId &&
+                    .Where(t => t.CategoryId == category.CategoryId &&
                                 lastThreeMonths.Any(m => t.Month == m.Month && t.Year == m.Year))
                     .Select(t => t.Amount)
                     .DefaultIfEmpty(0)

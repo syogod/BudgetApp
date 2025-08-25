@@ -10,7 +10,6 @@
                     <TextBox Text="Hello World"/>
                 </Border>
             </Grid>
-            <!-- Add Controls for Previewer Here -->
         </Border>
     </Design.PreviewWith>
     
@@ -71,5 +70,4 @@
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
     </Style>
-    <!-- Add Styles Here -->
 </Styles>

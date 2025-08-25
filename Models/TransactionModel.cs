@@ -6,9 +6,9 @@ namespace BudgetApp.Models;
 
 public class TransactionModel
 {
-    [Key][DatabaseGenerated(DatabaseGeneratedOption.Identity)] public int transactionId { get; set; }
-    public required int Month { get; set; }
-    public required int Year { get; set; }
-    public required int CategoryID { get; set; }
-    public required int Amount { get; set; }
+    [Key][DatabaseGenerated(DatabaseGeneratedOption.Identity)] public int TransactionId { get; init; }
+    public required int Month { get; init; }
+    public required int Year { get; init; }
+    public required int CategoryId { get; init; }
+    public required int Amount { get; init; }
 }

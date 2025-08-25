@@ -15,9 +15,9 @@ public partial class CategoryModel : ObservableObject
     public required int CategoryId { get; set; }
 
     public required string Name { get; set; }
-    public int? ParentCategoryId { get; set; }
-    public required byte Income { get; set; }
-    public required byte Enabled { get; set; } = 1;
+    public int? ParentCategoryId { get; init; }
+    public required byte Income { get; init; }
+    public required byte Enabled { get; init; } = 1;
 
     [NotMapped] public ObservableCollection<CategoryModel>? SubCategories { get; set; }
 
@@ -25,6 +25,8 @@ public partial class CategoryModel : ObservableObject
     private int _triMonthlyAvg = 0;
     private int? _newTransactionAmount = null;
 
+    // MonthlySum is the total amount for this category for the current month
+    // Setting MonthlySum will notify the Parent category to update its MonthlyParentCategorySum
     [NotMapped]
     public int MonthlySum
     {
@@ -38,7 +40,8 @@ public partial class CategoryModel : ObservableObject
         }
     }
 
-
+    // TriMonthlyAvg is the average monthly amount for this category over the last three months
+    // Setting TriMonthlyAvg will notify the Parent category to update its MonthlyParentCategoryEst
     [NotMapped]
     public int TriMonthlyAvg
     {
@@ -46,6 +49,8 @@ public partial class CategoryModel : ObservableObject
         set => SetProperty(ref _triMonthlyAvg, value);
     }
 
+    // NewTransactionAmount is a temporary property used for adding a new transaction
+    // It is not mapped to the database
     [NotMapped]
     public int? NewTransactionAmount
     {
@@ -53,18 +58,25 @@ public partial class CategoryModel : ObservableObject
         set => SetProperty(ref _newTransactionAmount, value);
     }
 
+    // IsAddingSubcategory indicates whether the UI is in the state of adding a new subcategory
     [NotMapped] public bool IsAddingSubcategory { get; set; } = false;
 
     [NotMapped] public string? NewSubcategoryName { get; set; } = null;
 
-    [NotMapped] public CategoryModel? Parent { get; set; }
+    [NotMapped] public CategoryModel? Parent { get; init; }
 
+    // MonthlyParentCategorySum is the sum of MonthlySum of all subcategories
+    // It is computed dynamically and not stored in the database
     [NotMapped]
     public int MonthlyParentCategorySum
     {
         get { return SubCategories?.Sum(sc => sc.MonthlySum) ?? 0; }
     }
 
+    // MonthlyParentCategoryEst is the estimated monthly amount for the parent category
+    // For income categories, it uses the higher of TriMonthlyAvg or MonthlySum from subcategories
+    // For expense categories, it uses the higher of MonthlySum or TriMonthlyAvg from subcategories
+    // It is computed dynamically and not stored in the database
     [NotMapped]
     public int MonthlyParentCategoryEst
     {
@@ -72,13 +84,11 @@ public partial class CategoryModel : ObservableObject
         {
             if (Income == 1)
             {
-                // For income: use TriMonthlyAvg if greater than MonthlySum
                 return SubCategories?.Sum(sc => sc.TriMonthlyAvg > sc.MonthlySum ? sc.TriMonthlyAvg : sc.MonthlySum) ??
                        0;
             }
             else
             {
-                // For expenses: use MonthlySum if greater than TriMonthlyAvg
                 return SubCategories?.Sum(sc => Math.Max(sc.MonthlySum, sc.TriMonthlyAvg)) ?? 0;
             }
         }
