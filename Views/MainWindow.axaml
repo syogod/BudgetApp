@@ -82,9 +82,9 @@
                                 </StackPanel>
                                 <Border Classes="formatted">
                                     <StackPanel>
-                                        <Grid ColumnDefinitions="*,Auto,Auto,50,50">
-                                            <TextBlock Classes="Headers" Grid.Column="3">Total</TextBlock>
-                                            <TextBlock Classes="Headers" Grid.Column="4">Avg</TextBlock>
+                                        <Grid ColumnDefinitions="*,Auto,Auto,50,50" ColumnSpacing="5" Margin="1" >
+                                            <TextBlock Classes="Headers" Grid.Column="3" HorizontalAlignment="Right">Total</TextBlock>
+                                            <TextBlock Classes="Headers" Grid.Column="4" HorizontalAlignment="Right">Avg</TextBlock>
                                         </Grid>
                                         <ItemsControl ItemsSource="{Binding SubCategories}" >
                                             <ItemsControl.ItemTemplate>
@@ -93,8 +93,9 @@
                                                         <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center"/>
                                                         <TextBox Grid.Column="1" 
                                                                  Text="{Binding NewTransactionAmount, Mode=TwoWay, Converter={StaticResource StringToIntConvert}}" 
-                                                                 Watermark="0" 
-                                                                 Width="60" 
+                                                                 Watermark="0"
+                                                                 Width="55"
+                                                                 MinWidth="0"
                                                                  VerticalAlignment="Center">
                                                             <i:Interaction.Behaviors>
                                                                 <localBehaviors:NumericOnlyBehavior/>
@@ -193,9 +194,9 @@
                             </StackPanel>
                             <Border Classes="formatted">
                                 <StackPanel>
-                                    <Grid ColumnDefinitions="*,Auto,Auto,40,40">
-                                        <TextBlock Classes="Headers" Grid.Column="3">Total</TextBlock>
-                                        <TextBlock Classes="Headers" Grid.Column="4">Avg</TextBlock>
+                                    <Grid ColumnDefinitions="*,Auto,Auto,50,50" ColumnSpacing="5" Margin="1">
+                                        <TextBlock Classes="Headers" Grid.Column="3" HorizontalAlignment="Right">Total</TextBlock>
+                                        <TextBlock Classes="Headers" Grid.Column="4" HorizontalAlignment="Right">Avg</TextBlock>
                                     </Grid>
                                     <ItemsControl ItemsSource="{Binding SubCategories}">
                                         <ItemsControl.ItemTemplate>
@@ -205,7 +206,8 @@
                                                     <TextBox Grid.Column="1" 
                                                              Text="{Binding NewTransactionAmount, Mode=TwoWay, Converter={StaticResource StringToIntConvert}}" 
                                                              Watermark="0" 
-                                                             Width="60" 
+                                                             Width="55"
+                                                             MinWidth="0"
                                                              VerticalAlignment="Center">
                                                         <i:Interaction.Behaviors>
                                                             <localBehaviors:NumericOnlyBehavior/>
